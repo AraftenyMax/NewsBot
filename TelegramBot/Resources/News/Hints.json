@@ -1,0 +1,9 @@
+{
+  "category": "Please, choose category: ",
+  "sources": "Please, choose sources: ",
+  "country": "Please, choose country: ",
+  "q": "Please, enter query: ",
+  "count": "Please, enter count of news: ",
+  "start": "Please, choose which factor will be primary(You can't search news by source and country both)",
+  "finish": "Done!"
+}
