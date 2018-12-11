@@ -17,6 +17,7 @@ namespace TelegramBot.Components
         public static readonly string ComponentToken = "component:";
         public static readonly string SkipToken = "skip";
         public static readonly string NextToken = "next";
+        public static readonly string WrongChoiceHint = "wrongChoice";
     }
 
     public class NewsFieldName
@@ -26,6 +27,15 @@ namespace TelegramBot.Components
         public static readonly string Sources = "sources";
         public static readonly string Category = "category";
         public static readonly string Count = "count";
+    }
+
+    public class StringCaptions
+    {
+        public static readonly string NextPage = "Next page";
+        public static readonly string PreviousPage = "Previous page";
+        public static readonly string Skip = "Skip";
+        public static readonly string Continue = "Continue";
+        public static readonly string Finish = "Finish";
     }
 
     public enum ComponentState

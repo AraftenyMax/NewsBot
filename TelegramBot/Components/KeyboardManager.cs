@@ -43,11 +43,19 @@ namespace TelegramNewsBot.Components
         {
             var keyboards = new List<InlineKeyboardMarkup>();
             int pagesCount = (int)Math.Ceiling((double)rows.Count / rowsPerPage);
+            string buttonText = "";
+            if (skip == true)
+            {
+                buttonText = StringCaptions.Skip;
+            } else if (fewValues == true)
+            {
+                buttonText = StringCaptions.Continue;
+            }
             var skipRow = new List<InlineKeyboardButton>
             {
                 new InlineKeyboardButton
                 {
-                    Text = "Skip",
+                    Text = buttonText,
                     CallbackData = StringTokens.SkipToken
                 }
             };
@@ -61,7 +69,7 @@ namespace TelegramNewsBot.Components
                 {
                     var previousButton = new InlineKeyboardButton
                     {
-                        Text = "Previous",
+                        Text = StringCaptions.PreviousPage,
                         CallbackData = $"{StringTokens.PageToken}{previousPage}"
                     };
                     pagingRow.Add(previousButton);
@@ -70,7 +78,7 @@ namespace TelegramNewsBot.Components
                 {
                     var nextButton = new InlineKeyboardButton
                     {
-                        Text = "Next",
+                        Text = StringCaptions.NextPage,
                         CallbackData = $"{StringTokens.PageToken}{nextPage}"
                     };
                     pagingRow.Add(nextButton);
@@ -78,7 +86,7 @@ namespace TelegramNewsBot.Components
                 var keyboardRows = rows.Skip(rowsCount).Take(rowsPerPage).ToList();
                 keyboardRows.Add(pagingRow);
                 var keyboard = new InlineKeyboardMarkup(keyboardRows);
-                if (skip)
+                if (skip || fewValues)
                 {
                     keyboardRows.Add(skipRow);
                 }

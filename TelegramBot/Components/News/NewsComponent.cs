@@ -44,8 +44,8 @@ namespace TelegramNewsBot.Components
             var categories = Utils.LoadConfig<Dictionary<string, string>>(@"../../Resources/News/Categories.json");
             var counts = Utils.LoadConfig<Dictionary<string, string>>(@"../../Resources/News/Counts.json");
 
-            SourcesKeyboards = KeyboardManager.InitKeyboard(sources, 3, 3);
-            CountriesKeyboards = KeyboardManager.InitKeyboard(countries, 3, 3);
+            SourcesKeyboards = KeyboardManager.InitKeyboard(sources, 3, 3, false, true);
+            CountriesKeyboards = KeyboardManager.InitKeyboard(countries, 3, 3, false, true);
             CategoriesKeyboard = KeyboardManager.InitKeyboard(categories, 1, categories.Count, true)[0];
             CountKeyboard = KeyboardManager.InitKeyboard(counts, 1, counts.Count, true)[0];
             BindHandlers();
@@ -75,21 +75,11 @@ namespace TelegramNewsBot.Components
             List<string> data = callbackData.Split(':').Select(x => x.Trim()).ToList();
             if (callbackData.Contains(StringTokens.BasefieldToken))
             {
-                if (BaseField == null)
-                {
-                    string value = data[1];
-                    if (Config.RequestFields.Contains(value) && Config.BaseFields.Contains(value))
-                    {
-                        BaseField = value;
-                        response = ChooseNextHandler(data);
-                    }
-                }
+                response = HandleBaseFieldToken(data);
             }
             if (callbackData.Contains(StringTokens.PageToken))
             {
-                var keyboard = CurrentHandler(data);
-                var advice = Hints[CurrentField];
-                response = new Response(advice, keyboard);
+                response = HandlePageToken(data);
             }
             if (ServiceHandlers.Keys.Contains(callbackData))
             {
@@ -97,14 +87,7 @@ namespace TelegramNewsBot.Components
             }
             if (callbackData.Contains(StringTokens.ValueToken) || response == null)
             {
-                if (_State == ComponentState.WaitingForInput)
-                {
-                    _State = ComponentState.NotWaitingForInput;
-                    var args = new StateChangeEventArgs(_State);
-                    OnStateChange(this, args);
-                }
-                ProcessedData[CurrentField] = data.Last();
-                response = ChooseNextHandler(data);
+                response = HandleValueToken(data);
             }
             return response;
         }
@@ -135,6 +118,68 @@ namespace TelegramNewsBot.Components
             return new Response(advice, keyboard);
         }
 
+        Response HandleBaseFieldToken(List<string> callbackData)
+        {
+            Response response = null;
+            if (BaseField == null)
+            {
+                string value = callbackData.Last();
+                if (Config.RequestFields.Contains(value) && Config.BaseFields.Contains(value))
+                {
+                    BaseField = value;
+                    response = ChooseNextHandler(callbackData);
+                }
+            }
+            return response;
+        }
+
+        Response HandlePageToken(List<string> callbackData)
+        {
+            var keyboard = CurrentHandler(callbackData);
+            var advice = Hints[CurrentField];
+            var response = new Response(advice, keyboard);
+            return response;
+        }
+
+        Response HandleValueToken(List<string> callbackData)
+        {
+            Response response = null;
+            if (_State == ComponentState.WaitingForInput)
+            {
+                _State = ComponentState.NotWaitingForInput;
+                var args = new StateChangeEventArgs(_State);
+                OnStateChange(this, args);
+            }
+            if (Config.FewValuesFields.Contains(CurrentField))
+            {
+                InlineKeyboardMarkup keyboard = DataHandlers[CurrentField](callbackData);
+                string hint = Hints[CurrentField];
+                string value = callbackData.Last();
+                if (ProcessedData.ContainsKey(CurrentField))
+                {
+                    if (!ProcessedData[CurrentField].Contains(value))
+                    {
+                        ProcessedData[CurrentField] += "+" + value;
+                    }
+                    else
+                    {
+                        hint += Hints[StringTokens.WrongChoiceHint];
+                    }
+                }
+                else
+                {
+                    ProcessedData[CurrentField] = value;
+                }
+                response = new Response(hint, keyboard);
+            }
+            else
+            {
+                ProcessedData[CurrentField] = callbackData.Last();
+                response = ChooseNextHandler(callbackData);
+            }
+            return response;
+        }
+
         public Response Start(List<string> callbackData)
         {
             var baseFields = Config.BaseFields.ToDictionary(s => s, s => $"{StringTokens.BasefieldToken}{s}");
@@ -143,18 +188,28 @@ namespace TelegramNewsBot.Components
             return response;
         }
 
+        void Flush()
+        {
+            CurrentField = null;
+            CurrentHandler = null;
+            BaseField = null;
+            ProcessedData.Clear();
+        }
+
         public Response Finish(List<string> callbackData)
         {
             Response response = new Response("Here will be news", null);
+            Flush();
             return response;
         }
 
         public Response Skip(List<string> callbackData)
         {
             Response response;
-            if (Config.SkippableFields.Contains(CurrentField))
+            if (Config.SkippableFields.Contains(CurrentField) || ProcessedData.ContainsKey(CurrentField))
             {
-                ProcessedData[CurrentField] = null;
+                if (!ProcessedData.ContainsKey(CurrentField))
+                    ProcessedData[CurrentField] = null;
                 if (_State == ComponentState.WaitingForInput)
                 {
                     _State = ComponentState.NotWaitingForInput;
@@ -173,12 +228,9 @@ namespace TelegramNewsBot.Components
 
         public InlineKeyboardMarkup FinishKeyboard(List<string> callbackData)
         {
-            CurrentField = "";
-            CurrentHandler = null;
-            BaseField = "";
             var response = new InlineKeyboardMarkup(
                 new InlineKeyboardButton {
-                    Text = "Finish", CallbackData = StringTokens.FinishToken
+                    Text = StringCaptions.Finish, CallbackData = StringTokens.FinishToken
                 });
             return response;
         }
@@ -215,7 +267,7 @@ namespace TelegramNewsBot.Components
             var args = new StateChangeEventArgs(_State);
             OnStateChange(this, args);
             InlineKeyboardMarkup keyboard = new InlineKeyboardMarkup(
-                new InlineKeyboardButton { Text = "Skip", CallbackData = StringTokens.SkipToken } 
+                new InlineKeyboardButton { Text = StringCaptions.Skip, CallbackData = StringTokens.SkipToken } 
             );
             return keyboard;
         }
