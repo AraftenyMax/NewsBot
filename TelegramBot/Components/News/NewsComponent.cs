@@ -23,6 +23,8 @@ namespace TelegramNewsBot.Components
         Dictionary<string, ServiceHandler> ServiceHandlers;
         ConfigurationModel Config;
 
+        NewsFetcher NewsFetcher;
+
         public event StateChangeEventHandler OnStateChange;
 
         public List<InlineKeyboardMarkup> SourcesKeyboards;
@@ -43,6 +45,8 @@ namespace TelegramNewsBot.Components
             var countries = Utils.LoadConfig<Dictionary<string, string>>(@"../../Resources/News/Countries.json");
             var categories = Utils.LoadConfig<Dictionary<string, string>>(@"../../Resources/News/Categories.json");
             var counts = Utils.LoadConfig<Dictionary<string, string>>(@"../../Resources/News/Counts.json");
+
+            NewsFetcher = new NewsFetcher(Config.UrlTemplate, Config.UrlRequestFields);
 
             SourcesKeyboards = KeyboardManager.InitKeyboard(sources, 3, 3, false, true);
             CountriesKeyboards = KeyboardManager.InitKeyboard(countries, 3, 3, false, true);
@@ -96,7 +100,7 @@ namespace TelegramNewsBot.Components
         {
             InlineKeyboardMarkup keyboard = null;
             string advice = null;
-            foreach (string fieldName in Config.RequestFields)
+            foreach (string fieldName in Config.UrlRequestFields)
             {
                 if (!ProcessedData.ContainsKey(fieldName))
                 {
@@ -124,7 +128,7 @@ namespace TelegramNewsBot.Components
             if (BaseField == null)
             {
                 string value = callbackData.Last();
-                if (Config.RequestFields.Contains(value) && Config.BaseFields.Contains(value))
+                if (Config.UrlRequestFields.Contains(value) && Config.BaseFields.Contains(value))
                 {
                     BaseField = value;
                     response = ChooseNextHandler(callbackData);
@@ -198,7 +202,8 @@ namespace TelegramNewsBot.Components
 
         public Response Finish(List<string> callbackData)
         {
-            Response response = new Response("Here will be news", null);
+            var news = NewsFetcher.FetchNews(ProcessedData);
+            var response = new Response(news, null);
             Flush();
             return response;
         }

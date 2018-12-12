@@ -9,7 +9,7 @@ namespace TelegramBot.Components.News
     class ConfigurationModel
     {
         public List<string> ResponseFields;
-        public List<string> RequestFields;
+        public List<string> UrlRequestFields;
         public Dictionary<string, List<string>> IncompatibleFields;
         public List<string> BaseFields;
         public List<string> SkippableFields;

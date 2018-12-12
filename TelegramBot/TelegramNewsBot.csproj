@@ -58,6 +58,8 @@
     <Compile Include="Components\News\ConfigurationModel.cs" />
     <Compile Include="Components\EventChangeState.cs" />
     <Compile Include="Components\News\NewsComponent.cs" />
+    <Compile Include="Components\News\NewsFetcher.cs" />
+    <Compile Include="Components\News\ResponseModel.cs" />
     <Compile Include="Components\Response.cs" />
     <Compile Include="Components\Utils.cs" />
     <Compile Include="Program.cs" />

@@ -8,6 +8,7 @@ using Telegram.Bot.Args;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 using TelegramBot;
+using TelegramBot.Components.News;
 
 namespace TelegramNewsBot
 {

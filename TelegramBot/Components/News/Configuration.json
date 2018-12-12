@@ -1,5 +1,5 @@
 {
-  "UrlTemplate": "https://newsapi.org/v2/{0}&apiKey=9a4d13e55ffc479d8579a598b5272841",
+  "UrlTemplate": "https://newsapi.org/v2/top-headlines?{0}&apiKey=9a4d13e55ffc479d8579a598b5272841",
   "ResponseFields": [ "author", "title", "url", "urlToImage", "publishedAt" ],
   "RequestFields": [ "category", "sources", "country", "q", "count" ],
   "IncompatibleFields": {
@@ -12,6 +12,6 @@
     ]
   },
   "BaseFields": [ "country", "sources" ],
-  "SkippableFields": ["q", "category", "count"],
-  "FewValuesFields": ["sources"]
+  "SkippableFields": [ "q", "category", "count" ],
+  "FewValuesFields": [ "sources" ]
 }
