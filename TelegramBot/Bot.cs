@@ -15,7 +15,7 @@ namespace TelegramBot
     public class Bot
     {
         static readonly TelegramBotClient Client = new TelegramBotClient(
-            "487913498:AAGCwB-46YCZ2EPOsy7B5g4jJGvck1wtZv8");
+            "{0}");
         ComponentDispatcher dispatcher = new ComponentDispatcher();
         public void Start()
         {
